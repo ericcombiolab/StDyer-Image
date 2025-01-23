@@ -1,0 +1,99 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=example_ddp
+
+defaults:
+  - override /mode: exp.yaml
+  - override /trainer: stdyer.yaml
+  - override /model: dgg.yaml
+  - override /datamodule: dgg.yaml
+  - override /callbacks: stdyer.yaml
+  - override /logger: none.yaml
+seed: 42
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+# name of the run determines folder name in logs
+# can also be accessed by loggers
+name: "example_ddp"
+model:
+  lr: 0.001
+
+  # learning rate for Gaussian uniform prior, set to 0 will use uniform prior all the time
+  prior_lr: 0.2
+
+  gaussian_size: 64
+  attention_size: 64
+
+  exp_encoder_channels: [3000, 128, 256, 64]
+  exp_decoder_channels: [64, 256, 128, 3000]
+
+  # the number of spatially variable genes to detect for each domain
+  detect_svg: false
+
+  # a simple autoencoder will be used to refine the predicted domain labels (saved in obs["mlp_fit"])
+  # the raw predicted domain labels will NOT be overwritten and are saved in obs["pred_labels"]
+  # set to null to disable the refinement (recommend to disable it for large datasets with > 100k units)
+  refine_ae_channels: null
+
+  # weight for image-related loss
+  must_link: 0.1
+
+  # starting from this epoch to use fused graph
+  patience_start_epoch_pct: 50
+
+trainer:
+  # number of epochs to train
+  max_epochs: 100
+  # number of GPUs to use (require set datamodule.use_ddp to True at the bottom of this config file)
+  devices: 2
+  # stablize the training process
+  # gradient_clip_val: 2.0
+
+datamodule:
+  # full path to the dataset: data_dir/dataset_dir/sample_id.h5ad
+  data_dir: "/mnt/datasets/spatial_datasets/BGI"
+  dataset_dir: "MOSTA"
+  sample_id: "Mouse_brain"
+  data_file_name: "Mouse_brain_pixel.h5ad"
+  img_file_name: "Mouse_brain_spateo.h5ad"
+  img_patch_origin_loc: "left_top" # only for Stereo-seq dataset due to its special image coordinates; set to "center" for other datasets
+  img_coord_key: "pixel" # generally it should be "spatial" unless you have a specific key in the adata.obsm to indicate the matched coordinates of images
+  bin_size: 50
+  annotation_key: "annotation" # the number of clusters will be inferred from adata.obs[annotation_key]; for datasets without annotation, set it to null and set the num_classes parameter to the number of clusters
+  num_classes: "auto" # set to a concrete number of clusters if annotation_key is null; otherwise leave it as "auto"
+  data_type: "custom"
+
+  use_image: similarity
+
+  seed: 0
+  # number of highly variable genes
+  num_hvg: 3000
+
+  unit_fix_num: 8
+  unit_dynamic_candidate_num: 64
+  k: 8
+  rec_neigh_num: 8
+  forward_neigh_num: 8
+  max_dynamic_neigh: 8
+  dynamic_neigh_level: unit_img_sp # this is for spatial domain clustering; use unit_img_exp for cell type clustering
+
+  # use all highly variable genes and perform z-score normalization for model input and reconstruction
+  # if you want to use PCA, set it to "pca_scaled"
+  in_type: "scaled" # "pca_scaled"
+  out_type: "scaled" # "pca_scaled"
+  # number of pricipal components to use for PCA
+  # n_pc: 50
+
+  # set smaller batch_size (e.g., 256) for dataset
+  #     1. with fewer cells to improve convergence speed;
+  #     2. with more cells but low-end GPU to avoid "out of GPU memory error";
+  # set larger batch_size (e.g., 1024, 4096) for dataset with more cells on high-end GPU to improve GPU utilization;
+  batch_size: 1024
+  img_batch_size: 256
+
+  # use pytorch ddp to support multi-gpu training
+  use_ddp: True
+
+  # pin_memory: False

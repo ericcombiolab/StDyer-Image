@@ -1,0 +1,59 @@
+_target_: src.datamodules.gmvae_datamodule.GMVAEDataModule
+
+data_dir: "/mnt/datasets/spatial_datasets/BGI"
+dataset_dir: "MOSTA"
+data_type: "bgi"
+sample_id: "Mouse_brain"
+multi_slides: False
+annotation_key: null
+
+weighted_neigh: False
+dynamic_neigh_level: "unit_fix_domain_boundary"
+
+k: 8
+rec_neigh_num: 8
+forward_neigh_num: 8
+max_dynamic_neigh: 8
+unit_fix_num: 8
+unit_dynamic_num: 0
+unit_dynamic_candidate_num: 64
+
+rec_mask_neigh_threshold: null
+exchange_forward_neighbor_order: False
+use_image: False
+img_batch_size: 2048
+patch_size_factor: 5
+
+num_hvg: 2048
+lib_norm: True
+# in_type: "raw"
+# out_type: "raw"
+# in_type: "pca"
+# out_type: "pca"
+# in_type: "pca_unscaled"
+# out_type: "pca_unscaled"
+in_type: "scaled"
+out_type: "scaled"
+compared_type: "raw"
+n_pc: 50
+test_with_gt_sp: False
+
+batch_size: 1024
+
+num_classes: "auto"
+train_val_test_split: [1, 0, 0]
+num_workers: 16
+persistent_workers: True
+prefetch_factor: 2
+# num_workers: 0
+# persistent_workers: False
+# prefetch_factor: 1
+# pin_memory: False # wsl2 does not support pin_memory=True https://docs.nvidia.com/cuda/wsl-user-guide/index.html#known-limitations-for-linux-cuda-apps
+pin_memory: True
+seed: 42
+device: "auto"
+load_whole_graph_on_gpu: False
+z_scale: 2.
+resample_to: null
+n_jobs: "mean"
+use_ddp: False
