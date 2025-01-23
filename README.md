@@ -63,7 +63,3 @@ To train model with your own dataset, you can copy the [configs/experiment/examp
 cp configs/experiment/example_ddp.yaml configs/experiment/your_experiment.yaml
 python run.py experiment=your_experiment.yaml
 ```
-
-
-### For reproducing the results in the paper
-You can check https://doi.org/X/X to download the processed data and reproducible Jupyter notebooks. Please read the README.md inside the zip file for details.
